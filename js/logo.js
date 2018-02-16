@@ -95,6 +95,7 @@ function Logo () {
     this.turtleHeaps = {};
     this.invertList = {};
     this.beatList = {};
+    this.factorList = {};
 
     // We store each case arg and flow by switch block no. and turtle.
     this.switchCases = {};
@@ -1033,6 +1034,7 @@ function Logo () {
             this.dotCount[turtle] = 0;
             this.invertList[turtle] = [];
             this.beatList[turtle] = [];
+            this.factorList[turtle] = [];
             this.switchCases[turtle] = {};
             this.switchBlocks[turtle] = [];
             this.connectionStore[turtle] = {};
@@ -4433,6 +4435,37 @@ function Logo () {
                 }
             }
             break;
+        case 'onfactordo':
+            // Set up a listener for this turtle/onfactor combo.
+            if (args.length === 2) {
+                if (!(args[1] in that.actions)) {
+                    that.errorMsg(NOACTIONERRORMSG, blk, args[1]);
+                    that.stopTurtle = true;
+                } else {
+                    var __listener = function (event) {
+                        if (that.turtles.turtleList[turtle].running) {
+                            var queueBlock = new Queue(that.actions[args[1]], 1, blk);
+                            that.parentFlowQueue[turtle].push(blk);
+                            that.turtles.turtleList[turtle].queue.push(queueBlock);
+                        } else {
+                            // Since the turtle has stopped
+                            // running, we need to run the stack
+                            // from here.
+                            if (isflow) {
+                                that._runFromBlockNow(that, turtle, that.actions[args[1]], isflow, receivedArg);
+                            } else {
+                                that._runFromBlock(that, turtle, that.actions[args[1]], isflow, receivedArg);
+                            }
+                        }
+                    };
+
+                    var eventName = '__factor_' + args[0] + '_' + turtle + '__';
+                    that._setListener(turtle, eventName, __listener);
+
+                    that.factorList[turtle].push(args[0]);
+                }
+            }
+            break;
         case 'meter':
             if (args.length !== 2 || typeof(args[0]) !== 'number' || typeof(args[1]) !== 'number') {
                 that.errorMsg(NOINPUTERRORMSG, blk);
@@ -4506,6 +4539,21 @@ function Logo () {
 
                     var eventName = '__offbeat_' + turtle + '__';
                     that.stage.dispatchEvent(eventName);
+                }
+
+                for (var f = 0; f < that.factorList[turtle].length; f++) {
+                    var factor = that.factorList[turtle][f];
+                    var foo = that.notesPlayed[turtle] * factor;
+                    console.log(that.notesPlayed[turtle] + ' * ' + factor + ' = ' + foo);
+                    if (Math.floor(that.notesPlayed[turtle] * factor) === that.notesPlayed[turtle] * factor) {
+			var queueBlock = new Queue(childFlow, childFlowCount, blk, receivedArg);
+			that.parentFlowQueue[turtle].push(blk);
+			that.turtles.turtleList[turtle].queue.push(queueBlock);
+			childFlow = null;
+
+			var eventName = '__factor_' + factor + '_' + turtle + '__';
+			that.stage.dispatchEvent(eventName);
+                    }
                 }
             }
 

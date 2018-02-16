@@ -1130,6 +1130,18 @@ function initBasicProtoBlocks(palettes, blocks) {
     driftBlock.adjustWidthToLabel();
     driftBlock.flowClampZeroArgBlock();
 
+    var onFactorDoBlock = new ProtoBlock('onfactordo');
+    onFactorDoBlock.palette = palettes.dict['meter'];
+    blocks.protoBlockDict['onfactordo'] = onFactorDoBlock;
+    // #TRANS: 'on' mathematical 'factor' of a beat 'do' some action
+    onFactorDoBlock.staticLabels.push(_('on factor'), _('factor'), _('do'));
+    onFactorDoBlock.twoArgBlock();
+    onFactorDoBlock.defaults.push(1);
+    onFactorDoBlock.defaults.push(_('action'));
+    onFactorDoBlock.dockTypes[1] = 'numberin';
+    onFactorDoBlock.dockTypes[2] = 'textin';
+    onFactorDoBlock.adjustWidthToLabel();
+
     var offBeatDoBlock = new ProtoBlock('offbeatdo');
     offBeatDoBlock.palette = palettes.dict['meter'];
     blocks.protoBlockDict['offbeatdo'] = offBeatDoBlock;
